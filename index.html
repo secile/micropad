@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<title>micro:pad</title>
+
+<style type="text/css">
+* {
+    font-size: 3vmin;
+}
+html {
+    touch-action:none;
+    user-select: none;
+}
+</style>
+
+<body>
+    <div style="position:absolute; left:10px; top:10px;">
+        <button type="button" id="connect"    onclick="connectBLE()">🚩</button>
+        <button type="button" id="disconnect" onclick="disconnectBLE()" disabled>🛑</button>
+    </div>
+    <canvas id="canvas"></canvas>
+</body>
+
+<script>
+
+let isConnected = false;
+let uBitDevice;
+let rxCharacteristic;
+
+async function connectBLE() {
+    const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+    const UART_TX_CHARACTERISTIC_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+    const UART_RX_CHARACTERISTIC_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+
+    if (isConnected) return;
+
+    try {
+        console.log("Requesting Bluetooth Device...");
+        uBitDevice = await navigator.bluetooth.requestDevice({
+            filters: [{ namePrefix: "BBC micro:bit" }],
+            optionalServices: [UART_SERVICE_UUID]
+        });
+
+        uBitDevice.addEventListener('gattserverdisconnected', onDisconnected);
+
+        console.log("Connecting to GATT Server...");
+        const server = await uBitDevice.gatt.connect();
+
+        console.log("Getting Service...");
+        const service = await server.getPrimaryService(UART_SERVICE_UUID);
+
+        console.log("Getting Characteristics...");
+        const txCharacteristic = await service.getCharacteristic(UART_TX_CHARACTERISTIC_UUID);
+        txCharacteristic.startNotifications();
+        txCharacteristic.addEventListener("characteristicvaluechanged", onTxCharacteristicValueChanged);
+        rxCharacteristic = await service.getCharacteristic(UART_RX_CHARACTERISTIC_UUID);
+
+        isConnected = true;
+        document.getElementById('connect').disabled = true;
+        document.getElementById('disconnect').disabled = false;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+function disconnectBLE() {
+    if (!uBitDevice) return;
+    
+    if (uBitDevice.gatt.connected) {
+    uBitDevice.gatt.disconnect();
+    console.log("Disconnected");
+  }
+}
+
+// called when disconnected.
+function onDisconnected(event) {
+    let device = event.target;
+    console.log(`Device ${device.name} is disconnected.`);
+    isConnected = false;
+    document.getElementById('connect').disabled = false;
+    document.getElementById('disconnect').disabled = true;
+}
+
+// send cmd and micro:bit receive data.
+async function sendCmd(num) {
+    if (!rxCharacteristic) return;
+    
+    let encoder = new TextEncoder();
+    enqueue(() => rxCharacteristic.writeValue(encoder.encode(num + "\n"))
+        .catch(error => console.error('error occured while writeValue:', error)));
+}
+
+let queue = Promise.resolve();
+
+function enqueue(operation) {
+   queue = queue.then(operation, operation);
+   return queue;
+}
+
+// called when micro:bit send data.
+function onTxCharacteristicValueChanged(event) {
+	let receivedData = [];
+	for (var i = 0; i < event.target.value.byteLength; i++) {
+		receivedData[i] = event.target.value.getUint8(i);
+	}
+
+	const receivedString = String.fromCharCode.apply(null, receivedData);
+	console.log(receivedString);
+}
+
+
+// 以下、ユーザーコード。
+class Button {
+    // 初期化
+    constructor(canvas, context) {
+        this.canvas = canvas;
+        this.context = context;
+
+        // 中心座標。
+        this.centerX = this.canvas.width / 2;
+        this.centerY = this.canvas.height / 2;
+        // サイズ。(setTextで自動設定)
+        this.width = 0;
+        this.height = 0;
+
+        // 表示。
+        this.fontName = `Candara`;
+        this.fontSize = this.canvas.width / 10;
+        this.fontFillStyle = "blue";
+        this.fontStrokeStyle = "blue"; // not used.
+        this.textAlign = 'center';
+        this.textBaseline = 'middle';
+        this.backFillStyle = "SkyBlue";
+        this.backStrokeStyle = "blue";
+        this.setText("button");
+
+        // 状態。
+        this.clicked = false;
+        this.onChange = (flag) => {}; // null guard.
+
+        // マウスイベントのインストール。
+        this.installMouseEvent();
+    }
+
+    // 文字をセットする。文字のサイズも取得する。
+    setText(text) {
+        this.text = text;
+
+        // 描画サイズを取得する。
+        this.context.save();
+        this.context.font = `${this.fontSize}px ${this.fontName}`;
+        const metrics = this.context.measureText(text);
+        this.context.restore();
+
+        // サイズを取得する。
+        this.width = metrics.width;
+        this.height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+    }
+
+    // mousemove, mousedown, mouseupイベントのインストール。
+    // マルチタッチ対応できるように、pointerイベントに変更。
+    installMouseEvent() {
+        this.mousedown = false;
+        this.pointerId = 0;
+
+        window.addEventListener('pointerdown', ev => {
+            if (this.is_mouse_over(ev.offsetX, ev.offsetY)) {
+                this.mousedown = true;
+                this.pointerId = ev.pointerId;
+                this.onChange(true);
+            }
+        });
+
+        window.addEventListener('pointerup', ev => {
+            if (this.mousedown = true && this.pointerId == ev.pointerId) {
+                this.mousedown = false;
+                this.pointerId = 0;
+                this.onChange(false);
+            }
+        });
+    }
+
+    is_mouse_over(x, y) {
+        const l = this.centerX - this.width / 2;
+        const r = this.centerX + this.width / 2;
+        const t = this.centerY - this.height / 2;
+        const b = this.centerY + this.height / 2;
+        return (l < x && x < r && t < y && y < b);
+    }
+
+    update() {
+        // do nothing.
+    }
+
+    draw() {
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+
+        this.context.save();
+        {
+            this.context.lineWidth = this.mousedown? 5: 1;
+
+            // 中心を移動。
+            this.context.translate(this.centerX, this.centerY);
+
+            // 角丸を描画。
+            this.context.fillStyle = this.backFillStyle;
+            this.context.strokeStyle = this.backStrokeStyle;
+            this.roundedRect(0, -this.height*0.15, this.width*1.2, this.height*1.5, 10);
+
+            this.context.fillStyle = this.fontFillStyle;
+            this.context.strokeStyle = this.fontStrokeStyle;
+
+            // テキストを描画。
+            this.context.font = `${this.fontSize}px ${this.fontName}`;
+            this.context.textAlign = this.textAlign;
+            this.context.textBaseline = this.textBaseline;
+            this.context.fillText(this.text, 0, 0);
+        }
+        this.context.restore();
+    }
+
+    roundedRect(center_x, center_y, width, height, radius) {
+        const x = center_x - width / 2;
+        const y = center_y - height / 2;
+        this.context.save();
+        this.context.beginPath();
+        this.context.moveTo(x, y + radius);
+        this.context.arcTo(x, y + height, x + radius, y + height, radius);
+        this.context.arcTo(x + width, y + height, x + width, y + height - radius, radius);
+        this.context.arcTo(x + width, y, x + width - radius, y, radius);
+        this.context.arcTo(x, y, x, y + radius, radius);
+        this.context.closePath();
+        this.context.stroke(); // 枠線を描画。
+        this.context.fill(); // 塗りつぶす。
+        this.context.restore();
+    }
+}
+
+class Stick {
+    // 初期化
+    constructor(canvas, context) {
+        this.canvas = canvas;
+        this.context = context;
+
+        // 中心座標。
+        this.centerX = this.canvas.width / 2;
+        this.centerY = this.canvas.height / 2;
+
+        // センター原点での座標。
+        this.posX = 0;
+        this.posY = 0;
+
+        // 円の表示。
+        this.largeRadiusScale = 0.1;
+        this.smallRadiusScale = 0.05;
+        this.largeRadiusStyle = 'gray';
+        this.smallRadiusStyle = 'blue';
+
+        // スティックの状態。
+        this.stickAngle = 0; // 0.0-2pi。(X座標から時計回りラジアン)
+        this.stickPower = 0; // 0.0-1.0。
+
+        this.onChange = () => {}; // null guard.
+
+        // マウスイベントのインストール。
+        this.installMouseEvent();
+    }
+
+    // mousemove, mousedown, mouseupイベントのインストール。
+    // マルチタッチ対応できるように、pointerイベントに変更。
+    installMouseEvent() {
+        this.mousedown = false;
+        this.pointerId = 0;
+
+        window.addEventListener('pointerdown', ev => {
+            if (this.mouse_Drag(ev.offsetX, ev.offsetY, false)) { // clientX, clientYだとフォームの分ずれた。
+                this.mousedown = true;
+                this.pointerId = ev.pointerId;
+                this.mouse_Down();
+            }
+        });
+
+        window.addEventListener('pointermove', ev => {
+            if (this.mousedown && this.pointerId == ev.pointerId) {
+                this.mouse_Drag(ev.offsetX, ev.offsetY, true);
+                //console.log(this.name, "this.stickAngle", this.stickAngle, "this.stickPower", this.stickPower);
+            }
+        });
+
+        window.addEventListener('pointerup', ev => {
+            if (this.pointerId == ev.pointerId) {
+                this.mousedown = false;
+                this.pointerId = 0;
+                this.mouse_Up();
+                //console.log(this.name, "this.stickAngle", this.stickAngle, "this.stickPower", this.stickPower);
+            }
+        });
+    }
+
+    update() {
+        // do nothing.
+    }
+
+    mouse_Down() {
+        //console.log("mouse_Down");
+    }
+
+    mouse_Drag(x, y, updateStick) {
+        //console.log("mouse_Drag");
+
+        // センター原点での座標に変換。
+        const local_x =  x - this.centerX;
+        const local_y =  y - this.centerY;
+        const local_x2 = local_x * local_x;
+        const local_y2 = local_y * local_y;
+
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+        const radius_max = (width > height)? width * this.largeRadiusScale: height * this.largeRadiusScale;
+        const radius = Math.min(Math.sqrt(local_x2 + local_y2), radius_max);
+        
+        // 大きな円の内側か？
+        const inside_radius_max = (local_x2 + local_y2 < radius_max * radius_max);
+
+        if (updateStick) {
+            // 少し動くごとにonChangeせず、変化したらonChangedする。
+            let changed = false;
+
+            // powerとangleを求める。
+            let power = radius / radius_max;
+            let angle = Math.atan2(local_y, local_x); // X座標から時計回りラジアン。-π～+π。
+            if (angle < 0) angle += 2*Math.PI;        // 0～2πに変換。
+
+            // 画面の表示位置の更新。
+            this.posX = Math.cos(angle) * radius;
+            this.posY = Math.sin(angle) * radius;
+
+            // powerは3段階に丸める。
+            if      (power < 0.33)  this.stickPower = 0;
+            else if (power < 0.66)  this.stickPower = 0.5;
+            else this.stickPower = 1;
+            if (this.stickPower_Prev != this.stickPower) {
+                this.stickPower_Prev = this.stickPower;
+                changed = true;
+            }
+
+            // powerある時だけangle判定。
+            if (this.stickPower != 0) {
+                // angleは8方向のみ。
+                if      (1  * Math.PI / 8 <= angle && angle < 3  * Math.PI / 8) this.stickAngle = 2  * Math.PI / 8;
+                else if (3  * Math.PI / 8 <= angle && angle < 5  * Math.PI / 8) this.stickAngle = 4  * Math.PI / 8;
+                else if (5  * Math.PI / 8 <= angle && angle < 7  * Math.PI / 8) this.stickAngle = 6  * Math.PI / 8;
+                else if (7  * Math.PI / 8 <= angle && angle < 9  * Math.PI / 8) this.stickAngle = 8  * Math.PI / 8;
+                else if (9  * Math.PI / 8 <= angle && angle < 11 * Math.PI / 8) this.stickAngle = 10 * Math.PI / 8;
+                else if (11 * Math.PI / 8 <= angle && angle < 13 * Math.PI / 8) this.stickAngle = 12 * Math.PI / 8;
+                else if (13 * Math.PI / 8 <= angle && angle < 15 * Math.PI / 8) this.stickAngle = 14 * Math.PI / 8;
+                else this.stickAngle = 0;
+                this.stickAngle = Math.round(this.stickAngle * 100) / 100; // 3.14のように少数第2位で四捨五入。
+                if (this.stickAngle_Prev != this.stickAngle) {
+                    this.stickAngle_Prev = this.stickAngle;
+                    changed = true;
+                }
+            }
+
+            if (changed) {
+                this.onChange();
+            }
+        }
+
+        return inside_radius_max;
+    }
+
+    mouse_Up() {
+        //console.log("mouse_Up");
+
+        // スティックの状態を原点に戻す。
+        this.stickPower = 0;
+        this.stickAngle = 0;
+
+        // 表示位置を原点に戻す。
+        this.posX = 0;
+        this.posY = 0;
+
+        this.onChange();
+    }
+
+    draw() {
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+
+        // 大きな円をセンターに。
+        this.context.save();
+        {
+            this.context.fillStyle = this.largeRadiusStyle;
+            this.context.globalAlpha = 0.5; // 50%の透明度
+
+            this.context.translate(this.centerX, this.centerY)
+            this.context.beginPath();
+            const radius = (width > height)? width * this.largeRadiusScale: height * this.largeRadiusScale;
+            this.context.arc(0, 0, radius, 0, 2 * Math.PI);
+            this.context.closePath();
+            this.context.fill();
+        }
+        this.context.restore();
+
+        // 小さな円をセンター中心で(pos_x, pos_y)に。
+        this.context.save();
+        {
+            this.context.fillStyle = this.smallRadiusStyle;
+            this.context.globalAlpha = 0.5; // 50%の透明度
+
+            this.context.translate(this.centerX, this.centerY)
+            this.context.translate(this.posX, this.posY)
+            this.context.beginPath();
+            const radius = (width > height)? width * this.smallRadiusScale: height * this.smallRadiusScale;
+            this.context.arc(0, 0, radius, 0, 2 * Math.PI);
+            this.context.closePath();
+            this.context.fill();
+        }
+        this.context.restore();
+    }
+}
+
+let canvas, context;
+let controlls = [];
+
+
+setup();
+
+window.addEventListener('resize', () => {
+    setup();
+})
+
+
+function setup() {
+    canvas = document.querySelector('#canvas');
+    context = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const stick1 = new Stick(canvas, context);
+    stick1.centerX = canvas.width * 0.25;
+    stick1.onChange = () => {
+        const cmd = `s1,${stick1.stickAngle},${stick1.stickPower}`;
+        console.log(cmd);
+        this.sendCmd(cmd)
+    };
+
+    const stick2 = new Stick(canvas, context);
+    stick2.centerX = canvas.width * 0.75;
+    stick2.onChange = () => {
+        const cmd = `s2,${stick2.stickAngle},${stick2.stickPower}`;
+        console.log(cmd);
+        this.sendCmd(cmd)
+    };
+
+    const button1 = new Button(canvas, context);
+    button1.setText("X");
+    button1.centerX = canvas.width * 0.1;
+    button1.onChange = (flag) => {
+        const cmd = `b1,${flag? 1: 0},0`;
+        console.log(cmd);
+        this.sendCmd(cmd)
+    };
+
+    const button2 = new Button(canvas, context);
+    button2.setText("Y");
+    button2.centerX = canvas.width * 0.9;
+    button2.onChange = (flag) => {
+        const cmd = `b2,${flag? 1: 0},0`;
+        console.log(cmd);
+        this.sendCmd(cmd)
+    };
+
+    controlls = [stick1, stick2, button1, button2];
+}
+
+function update() {
+    for(let item of controlls) {
+        item.update();
+    }
+}
+
+function draw() {    
+    // 画面クリア。
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.style.backgroundColor = "AliceBlue";
+    for(let item of controlls) {
+        item.draw();
+    }
+}
+
+// フレームを更新。
+function updateFrame() {
+    update();
+    draw();
+    requestAnimationFrame(updateFrame);
+}
+
+// アニメーションの開始。
+requestAnimationFrame(updateFrame);
+
+
+// コンテクストメニュー禁止。
+document.oncontextmenu = () => {
+  return false;
+};
+
+</script>
