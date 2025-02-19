@@ -719,10 +719,11 @@ function initControl() {
     // Label.
     const label = new Label(canvas, context);
     label.text = "[micro:pad]";
-    label.fontFillStyle = "gray";
+    label.fontScale = 0.3;
+    label.fontFillStyle = "PowderBlue";
     result.push(label);
     window.addEventListener('resize', () => {
-        label.setPosition(canvas.width * 0.5, slider1.centerY - slider1.height);
+        label.setPosition(canvas.width * 0.5, canvas.height * 0.6);
     });
 
     // trigger 'resize' event to layout control.
