@@ -10,7 +10,7 @@ You can see screen below.
 ![image](https://github.com/user-attachments/assets/0cbb2cc2-be83-4312-882f-1917065aac9d)
 
 # Control.
-There are three kinds of control.
+There are 4 kinds of control.
 
 1. Analog Stick
 
@@ -27,6 +27,13 @@ in toggle mode, switch on and off on every click.
 3. Slider
 
 ![Slider](https://github.com/user-attachments/assets/3873f6b0-f230-4080-9676-c25ebb8b722d)
+
+4. Label
+
+This is only to show text message.
+
+![image](https://github.com/user-attachments/assets/15c9e27b-d02b-4f83-a02e-68249d6122c6)
+
 
 # transfer message format.
 On control updated, micropad send message to micro:bit via BLE. Message format is csv with 3 params 'ControlID, Value1, Value2'.  
