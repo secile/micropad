@@ -30,7 +30,7 @@ in toggle mode, switch on and off on every click.
 
 4. Label
 
-This is only to show text message.
+This is only to show text message. Use this to show your product name, or instruction to control.
 
 ![image](https://github.com/user-attachments/assets/15c9e27b-d02b-4f83-a02e-68249d6122c6)
 
