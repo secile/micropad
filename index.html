@@ -405,10 +405,12 @@ class Button {
     }
 
     is_mouse_over(x, y) {
-        const l = this.centerX - this.width / 2;
-        const r = this.centerX + this.width / 2;
-        const t = this.centerY - this.height / 2;
-        const b = this.centerY + this.height / 2;
+        const w = this.width + this.padding;
+        const h = this.height + this.padding;
+        const l = this.centerX - w / 2;
+        const r = this.centerX + w / 2;
+        const t = this.centerY - h / 2;
+        const b = this.centerY + h / 2;
         return (l < x && x < r && t < y && y < b);
     }
 
