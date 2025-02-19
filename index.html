@@ -654,6 +654,16 @@ function initControl() {
         canvas.height = window.innerHeight;
     });
 
+    // Label.
+    const label = new Label(canvas, context);
+    label.text = "[micro:pad]";
+    label.fontScale = 0.3;
+    label.fontFillStyle = "PowderBlue";
+    result.push(label);
+    window.addEventListener('resize', () => {
+        label.setPosition(canvas.width * 0.5, canvas.height * 0.6);
+    });
+
     // AnalogStick 1.
     const stick1 = new AnalogStick(canvas, context);
     stick1.onChange = (angle, power) => {
@@ -717,16 +727,6 @@ function initControl() {
     });
     // set default value.
     slider1.value = 0.5;
-
-    // Label.
-    const label = new Label(canvas, context);
-    label.text = "[micro:pad]";
-    label.fontScale = 0.3;
-    label.fontFillStyle = "PowderBlue";
-    result.push(label);
-    window.addEventListener('resize', () => {
-        label.setPosition(canvas.width * 0.5, canvas.height * 0.6);
-    });
 
     // trigger 'resize' event to layout control.
     window.dispatchEvent(new Event('resize'));
