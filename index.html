@@ -313,6 +313,7 @@ class Button {
 
         // 表示。
         this.fontName = 'Arial, Roboto, "Droid Sans", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", sans-serif';
+        this.fontScale = 1.0;
         this.fontFillStyle = "blue";   // text color.
         this.fontStrokeStyle = "blue"; // not used.
         this.backFillStyle = 'LightCyan';     // button back
@@ -324,6 +325,7 @@ class Button {
         this.setPosition(this.canvas.width / 2, this.canvas.height / 2);
 
         // 状態。
+        this.noBorder = false;
         this.toggle = false;
         this.onChange = () => {}; // null guard.
 
@@ -350,7 +352,7 @@ class Button {
 
     updateSize() {
         const size = Math.max(this.canvas.width, this.canvas.height);
-        this.fontSize = size / 10;
+        this.fontSize = size / 10 * this.fontScale;
 
         // 描画サイズを取得する。
         this.context.save();
@@ -415,10 +417,12 @@ class Button {
             //this.context.translate(this.centerX, this.centerY);
 
             // 角丸を描画。
+            if (!this.noBorder) {
             this.context.lineWidth = this.height * (this.is_active? 0.1: 0.02); // this.widthは不自然。this.heightを使う。
             this.context.fillStyle = this.is_active? this.backActiveStyle: this.backFillStyle;
             this.context.strokeStyle = this.backStrokeStyle;
             this.roundedRect(this.centerX, this.centerY, this.width+this.padding, this.height+this.padding, this.height*0.2);
+            }
 
             // テキストを描画。
             this.context.fillStyle = this.fontFillStyle;
@@ -444,6 +448,14 @@ class Button {
         this.context.stroke(); // 枠線を描画。
         this.context.fill(); // 塗りつぶす。
         this.context.restore();
+    }
+}
+
+class Label extends Button {
+    constructor(canvas, context) {
+        super(canvas, context);
+        this.noBorder = true;
+        this.fontScale = 0.5; // little smaller than Button.
     }
 }
 
@@ -697,6 +709,15 @@ function initControl() {
     });
     // set default value.
     slider1.value = 0.5;
+
+    // Label.
+    const label = new Label(canvas, context);
+    label.text = "[micro:pad]";
+    label.fontFillStyle = "gray";
+    result.push(label);
+    window.addEventListener('resize', () => {
+        label.setPosition(canvas.width * 0.5, slider1.centerY - slider1.height);
+    });
 
     // trigger 'resize' event to layout control.
     window.dispatchEvent(new Event('resize'));
