@@ -461,8 +461,8 @@ class Slider {
         );
 
         // 表示。
-        this.lineWidth = 0.05;
-        this.knobScale = 0.05;
+        this.lineWidth = 0.5;  // ratio to knob scale.
+        this.knobScale = 0.05; // ratio to max(canvas.width, canvas.height).
         this.lineStyle = 'gray';
         this.knobStyle = 'blue';
 
@@ -480,6 +480,15 @@ class Slider {
         this.sliderWidth = width;
         this.sliderLeft  = this.centerX - (this.sliderWidth / 2);
         this.sliderRight = this.centerX + (this.sliderWidth / 2);
+    }
+
+    get width() { return this.sliderWidth; }
+    get height() { return this.radius * 2; }
+    get radius() {
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+        const radius = (width > height)? width * this.knobScale: height * this.knobScale;
+        return radius;
     }
 
     get value() { return this.sliderValue; }
@@ -535,11 +544,8 @@ class Slider {
         const local_y =  y - this.centerY;
         const local_x2 = local_x * local_x;
         const local_y2 = local_y * local_y;
+        const radius = this.radius;
 
-        const width = this.canvas.width;
-        const height = this.canvas.height;
-        const radius = (width > height)? width * this.knobScale: height * this.knobScale;
-        
         // インジケーターの内側か？
         const inside_radius = (local_x2 + local_y2 < radius * radius);
 
@@ -566,8 +572,7 @@ class Slider {
     }
 
     draw() {
-        const width = this.canvas.width;
-        const height = this.canvas.height;
+        const radius = this.radius;
 
         // ライン。
         this.context.save();
@@ -575,7 +580,7 @@ class Slider {
             this.context.strokeStyle = this.lineStyle;
             this.context.globalAlpha = 0.5; // 透明度
 
-            this.context.lineWidth = height * this.lineWidth;
+            this.context.lineWidth = radius * this.lineWidth;
             context.lineCap = 'round';
             this.context.beginPath();
             this.context.moveTo(this.sliderLeft, this.centerY);
@@ -595,7 +600,6 @@ class Slider {
             this.centerX = this.sliderLeft + this.sliderWidth * this.sliderValue;
             this.context.translate(this.centerX, this.centerY)
             this.context.beginPath();
-            const radius = (width > height)? width * this.knobScale: height * this.knobScale;
             this.context.arc(0, 0, radius, 0, 2 * Math.PI);
             this.context.closePath();
             this.context.fill();
