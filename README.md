@@ -7,6 +7,8 @@ You can see screen below.
 - Press '🚩' button to connect your micro:bit.
 - Press '🛑' button to disconnect.
 
+If you can not connect to your micro:bit, please see [Connection Trouble](#connection-trouble) section below.
+
 ![image](https://github.com/user-attachments/assets/0cbb2cc2-be83-4312-882f-1917065aac9d)
 
 # Control.
@@ -90,10 +92,6 @@ https://makecode.microbit.org/S93757-34929-39231-95436
 
 ![image](https://github.com/user-attachments/assets/4a72074c-9bdd-4ad8-ae9c-c55ddbc96372)
 
-- of course, don't forget to enable 'No Pairing Required'.
-
-![image](https://github.com/user-attachments/assets/60c656ef-ff0d-468b-bbed-b63cd59a742c)
-
 # customise layout of control.
 modify initControl function.
 
@@ -128,7 +126,7 @@ button3.backStrokeStyle = "DarkGreen";
 
 # Connection trouble.
 When you press '🚩' button, it is listed your micro:bit in pairing dialog.  
-But if you have in trouble that it is not listed your micro:bit and displayed 'No compatible device found.' instead.
+But in case when it is not listed your micro:bit and displayed 'No compatible device found.' instead.
 
 ![image](https://github.com/user-attachments/assets/d351eac9-3b7b-49be-8f25-09034ac6f9b8)
 
@@ -137,7 +135,11 @@ Please check the list of already paired Bluetooth devices. and if you found alre
 
 ![image](https://github.com/user-attachments/assets/f8ae57d0-e735-4112-abdb-d9a97bccea59)
 
-
 It is because that during the bluetooth pairing process, keys are exchanged between the micro:bit and the parent device.  
 When you make new program and download to the micro:bit, key is updated, but parent device preserved old key,  
 therefore, keys are mismatched.
+
+
+Of course, don't forget to enable 'No Pairing Required'.
+
+![image](https://github.com/user-attachments/assets/60c656ef-ff0d-468b-bbed-b63cd59a742c)
