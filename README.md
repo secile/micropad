@@ -11,6 +11,10 @@ If you can not connect to your micro:bit, please see [Connection Trouble](#conne
 
 ![image](https://github.com/user-attachments/assets/0cbb2cc2-be83-4312-882f-1917065aac9d)
 
+# Supported browser.
+[Android, Windows] works fine.  
+[iOS] Safari do not works correctly, because Safari do not support Web Bluetooth API. please use [Bluefy](https://apps.apple.com/jp/app/bluefy-web-ble-browser/id1492822055) instead.
+
 # Control.
 There are 4 kinds of control.
 
