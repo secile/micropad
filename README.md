@@ -71,8 +71,13 @@ const y = Math.sin(angle) * power;
 
 # coding on micro:bit.
 
-See my micro:bit MakeCode sample project.  
-https://makecode.microbit.org/S93757-34929-39231-95436
+After create new project, you have to add 'bluetooth' extention to your project.
+
+![image](https://github.com/user-attachments/assets/d334d4db-63ed-425f-82ad-4eb8b090961d)
+
+and select 'No Pariring Required' from 'Project Settings'.
+
+![image](https://github.com/user-attachments/assets/53fa1ff6-86de-425e-9436-61935cbc6c0e)
 
 - on start
     - add 'bluetooth uart service' to 'on start' 
@@ -91,6 +96,9 @@ https://makecode.microbit.org/S93757-34929-39231-95436
     - here is a sample. Hero moves by Analog Stick, LED shows 'X' or 'Y' by pressing Button, and LED brightness can be changed by Slider. don't forget to add 'create sprite' in 'on start'.
 
 ![image](https://github.com/user-attachments/assets/4a72074c-9bdd-4ad8-ae9c-c55ddbc96372)
+
+See my micro:bit MakeCode sample project.  
+https://makecode.microbit.org/S93757-34929-39231-95436
 
 # customise layout of control.
 modify initControl function.
