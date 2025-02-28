@@ -126,3 +126,18 @@ button3.backStrokeStyle = "DarkGreen";
 
 ![image](https://github.com/user-attachments/assets/b56faa47-b4e5-4fcc-aaee-3d353c7618c4)
 
+# Connection trouble.
+When you press '🚩' button, it is listed your micro:bit in pairing dialog.  
+But if you have in trouble that it is not listed your micro:bit and displayed 'No compatible device found.' instead.
+
+![image](https://github.com/user-attachments/assets/d351eac9-3b7b-49be-8f25-09034ac6f9b8)
+
+This trouble happens when you have already paired your micro:bit in the past.  
+Please check the list of already paired Bluetooth devices. and if you found alread paired micro:bit, remove it.
+
+![image](https://github.com/user-attachments/assets/f8ae57d0-e735-4112-abdb-d9a97bccea59)
+
+
+It is because that during the bluetooth pairing process, keys are exchanged between the micro:bit and the parent device.  
+When you make new program and download to the micro:bit, key is updated, but parent device preserved old key,  
+therefore, keys are mismatched.
