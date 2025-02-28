@@ -146,8 +146,3 @@ Please check the list of already paired Bluetooth devices. and if you found alre
 It is because that during the bluetooth pairing process, keys are exchanged between the micro:bit and the parent device.  
 When you make new program and download to the micro:bit, key is updated, but parent device preserved old key,  
 therefore, keys are mismatched.
-
-
-Of course, don't forget to enable 'No Pairing Required'.
-
-![image](https://github.com/user-attachments/assets/60c656ef-ff0d-468b-bbed-b63cd59a742c)
