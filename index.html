@@ -89,7 +89,7 @@ function onDisconnected(event) {
 }
 
 // send cmd and micro:bit receive data.
-async function sendCmd(cmd) {
+async function sendBLE(cmd) {
     // write log when micro:bit is not connected.
     if (!isConnected) {
         console.log(cmd);
@@ -115,7 +115,19 @@ function onTxCharacteristicValueChanged(event) {
 	}
 
 	const receivedString = String.fromCharCode.apply(null, receivedData);
-	console.log(receivedString);
+	console.log(receivedString);           // 'controlId:param'
+    let elems = receivedString.split(':'); // elems[0]=controlId, elems[1]=param
+    if (elems.length !== 2) return;        // ensure elems has 2 params.
+    ble_event.dispatchEvent(new CustomEvent('ble_received', { detail: elems }));
+}
+
+const ble_event = new EventTarget();
+function recvBLE(controlId, func) {
+    ble_event.addEventListener('ble_received', ev => {
+        const elems = ev.detail;
+        if (elems[0] !== controlId) return; // call func by controlID.
+        func(elems[1]);
+    });
 }
 
 //--- user interface.
@@ -663,12 +675,16 @@ function initControl() {
     window.addEventListener('resize', () => {
         label.setPosition(canvas.width * 0.5, canvas.height * 0.6);
     });
+    // update label when receive text from micro:bit.
+    this.recvBLE('l1', param => {
+        label.text = `temperature:${param}`;
+    });
 
     // AnalogStick 1.
     const stick1 = new AnalogStick(canvas, context);
     stick1.onChange = (angle, power) => {
         const cmd = `a1,${angle},${power}`;
-        sendCmd(cmd)
+        this.sendBLE(cmd)
     };
     result.push(stick1);
     window.addEventListener('resize', () => {
@@ -679,7 +695,7 @@ function initControl() {
     const stick2 = new AnalogStick(canvas, context);
     stick2.onChange = (angle, power) => {
         const cmd = `a2,${angle},${power}`;
-        sendCmd(cmd)
+        this.sendBLE(cmd)
     };
     result.push(stick2);
     window.addEventListener('resize', () => {
@@ -691,7 +707,7 @@ function initControl() {
     button1.text = "X";
     button1.onChange = (flag) => {
         const cmd = `b1,${flag? 1: 0},0`;
-        sendCmd(cmd)
+        this.sendBLE(cmd)
     };
     result.push(button1);
     window.addEventListener('resize', () => {
@@ -703,7 +719,7 @@ function initControl() {
     button2.text = "Y";
     button2.onChange = (flag) => {
         const cmd = `b2,${flag? 1: 0},0`;
-        sendCmd(cmd)
+        this.sendBLE(cmd)
     };
     result.push(button2);
     window.addEventListener('resize', () => {
@@ -719,7 +735,7 @@ function initControl() {
     slider1.knobStyle = 'orange';
     slider1.onChange = (value) => {
         const cmd = `s1,${value},0`;
-        sendCmd(cmd)
+        this.sendBLE(cmd)
     };
     result.push(slider1);
     window.addEventListener('resize', () => {
