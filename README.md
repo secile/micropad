@@ -36,7 +36,8 @@ in toggle mode, switch on and off on every click.
 
 4. Label
 
-This is only to show text message. Use this to show your product name, or instruction to control.
+Show text message. Use this to show your product name, or instruction to control.  
+Or use this to [show information received from micro:bit](#show-information-received-from-microbit).
 
 ![image](https://github.com/user-attachments/assets/15c9e27b-d02b-4f83-a02e-68249d6122c6)
 
@@ -135,6 +136,17 @@ button3.backStrokeStyle = "DarkGreen";
 ```
 
 ![image](https://github.com/user-attachments/assets/b56faa47-b4e5-4fcc-aaee-3d353c7618c4)
+
+# show information received from micro:bit.
+to send information from micro:bit to micropad, use 'bluetooth uart write value' block.
+
+![image](https://github.com/user-attachments/assets/00f53cdc-cc18-4e79-a5f5-44823a8b6220)
+
+in micropad, call recvBLE function.  
+1st argument is control ID. this must be matched with variable name of 'bluetooth uart write value'.  
+2nd argument is callback when you receive message from micro:bit. change label.text property.
+
+![image](https://github.com/user-attachments/assets/e9acc461-96dd-4699-8fcb-c5d312caca25)
 
 # Connection trouble.
 When you press '🚩' button, it is listed your micro:bit in pairing dialog.  
