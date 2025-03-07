@@ -146,7 +146,7 @@ in micropad, call recvBLE function.
 1st argument is control ID. this must be matched with variable name of 'bluetooth uart write value'.  
 2nd argument is callback when you receive message from micro:bit. change label.text property.
 
-![image](https://github.com/user-attachments/assets/e9acc461-96dd-4699-8fcb-c5d312caca25)
+![image](https://github.com/user-attachments/assets/9c88e96f-6ac5-4ca7-91da-ca35741a6fb2)
 
 # Connection trouble.
 When you press '🚩' button, it is listed your micro:bit in pairing dialog.  
