@@ -1,10 +1,10 @@
-# remotely control your micro:bit from smartphone via BLE (Bluetooth Low Energy).
+# remotely control your micro:bit or ESP32 from smartphone via BLE (Bluetooth Low Energy).
 
 Download 'index.html' to your smartphone and open it,  
 or access URL https://secile.github.io/micropad/
 
 You can see screen below.
-- Press '🚩' button to connect your micro:bit.
+- Press '🚩' button to connect your micro:bit or ESP32.
 - Press '🛑' button to disconnect.
 
 If you can not connect to your micro:bit, please see [Connection Trouble](#connection-trouble) section below.
@@ -15,8 +15,8 @@ If you can not connect to your micro:bit, please see [Connection Trouble](#conne
 [Android, Windows] works fine.  
 [iOS] Safari do not works correctly, because Safari do not support Web Bluetooth API. please use [Bluefy](https://apps.apple.com/jp/app/bluefy-web-ble-browser/id1492822055) instead.
 
-# Control.
-There are 4 kinds of control.
+# Controls.
+There are 4 kinds of controls.
 
 1. Analog Stick
 
@@ -73,6 +73,10 @@ you can deriver x and y from angle and power.
 const x = Math.cos(angle) * power;
 const y = Math.sin(angle) * power;
 ```
+
+# coding on ESP32.
+You have to upload the program that supports micropad to your ESP32.
+Please see [this repository](https://github.com/secile/micropad_server_esp32).
 
 # coding on micro:bit.
 
