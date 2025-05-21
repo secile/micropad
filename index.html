@@ -38,6 +38,16 @@ async function connectBLE() {
     const UART_TX_CHARACTERISTIC_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
     const UART_RX_CHARACTERISTIC_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 
+    // +----------------------------+           +----------------------------+
+    // | [micro:bit, ESP32]         |           | [micropad on Smartphone]   |
+    // | as Peripheral.             |           | as Central.                |
+    // | do Advertise.              |           | do Scan.                   |
+    // | become Server.             |           | become Client.             |
+    // | expose Nordic UART Service.|           | connect to Service.        |
+    // | - TX (0002) [Nofity, CCCD] | --------> | - TX (0002) start notify.  |
+    // | - RX (0003) [Write]        | <-------- | - RX (0003) write value.   |
+    // +----------------------------+           +----------------------------+
+
     if (isConnected) return;
 
     try {
@@ -56,9 +66,11 @@ async function connectBLE() {
         const service = await server.getPrimaryService(UART_SERVICE_UUID);
 
         console.log("Getting Characteristics...");
+        // TX (0002) [micro:bit -> micropad]
         const txCharacteristic = await service.getCharacteristic(UART_TX_CHARACTERISTIC_UUID);
-        txCharacteristic.startNotifications();
+        txCharacteristic.startNotifications(); // start notification on server.
         txCharacteristic.addEventListener("characteristicvaluechanged", onTxCharacteristicValueChanged);
+        // RX (0003) [micro:bit <- micropad]
         rxCharacteristic = await service.getCharacteristic(UART_RX_CHARACTERISTIC_UUID);
 
         isConnected = true;
