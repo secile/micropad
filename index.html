@@ -689,7 +689,7 @@ function initControl() {
     });
     // update label when receive text from micro:bit.
     this.recvBLE('l1', param => {
-        label.text = `temperature:${param}`;
+        label.text = `value:${param}`;
     });
 
     // AnalogStick 1.
